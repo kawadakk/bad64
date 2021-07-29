@@ -269,6 +269,48 @@ impl DecodeError {
     }
 }
 
+impl fmt::Display for DecodeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Reserved(a) => write!(
+                f,
+                "The instruction at address {:#x} contains a reserved bit pattern",
+                a
+            ),
+            Self::Unmatched(a) => write!(
+                f,
+                "The instruction at address {:#x} contains a bit pattern unhandled by the \
+                architecture specification",
+                a
+            ),
+            Self::Unallocated(a) => write!(
+                f,
+                "The instruction at address {:#x} contains an unallocated bit pattern",
+                a
+            ),
+            Self::Undefined(a) => write!(f, "The instruction at address {:#x} is undefined", a),
+            Self::EndOfInstruction(a) => write!(
+                f,
+                "The instruction at address {:#x} decodes to EndOfInstruction() \
+                (should execute as NOP)",
+                a
+            ),
+            Self::Lost(a) => write!(
+                f,
+                "The instruction at address {:#x} is recognized but can not be decoded \
+                completely due to an internal logic error",
+                a
+            ),
+            Self::Unreachable(a) => write!(
+                f,
+                "Unreachable code reached while decoding the instruction at address {:#x}",
+                a
+            ),
+            Self::Short(a) => write!(f, "An incomplete instruction found at address {:#x}", a),
+        }
+    }
+}
+
 /// Decode a single instruction
 ///
 /// # Arguments
