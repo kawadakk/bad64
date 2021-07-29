@@ -72,6 +72,9 @@ extern crate num_derive;
 #[macro_use]
 extern crate static_assertions;
 
+#[cfg(feature = "std")]
+extern crate std;
+
 use core::convert::{TryFrom, TryInto};
 use core::fmt;
 use core::hash::{Hash, Hasher};
@@ -307,6 +310,22 @@ impl fmt::Display for DecodeError {
                 a
             ),
             Self::Short(a) => write!(f, "An incomplete instruction found at address {:#x}", a),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for DecodeError {
+    fn description(&self) -> &str {
+        match self {
+            Self::Reserved(_) => "reserved bit pattern",
+            Self::Unmatched(_) => "unhandled bit pattern",
+            Self::Unallocated(_) => "unallocated bit pattern",
+            Self::Undefined(_) => "undefined instruction",
+            Self::EndOfInstruction(_) => "decodes to EndOfInstruction() (should execute as NOP)",
+            Self::Lost(_) => "decode failure due to an internal logic error",
+            Self::Unreachable(_) => "unreachable code reached",
+            Self::Short(_) => "short instruction",
         }
     }
 }
