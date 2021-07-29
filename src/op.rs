@@ -1,9 +1,8 @@
-use core::fmt;
+use core::{convert::TryInto, fmt};
 
 use bad64_sys::*;
 
 use cstr_core::CStr;
-use num_traits::ToPrimitive;
 
 // %s/^pub const \(Operation_ARM64_\(\w\+\)\): Operation = \d\+;/    \2 = \1 as u32,/g
 
@@ -1193,18 +1192,9 @@ impl Op {
     /// assert_eq!(decoded.op().mnem(), "nop");
     /// ```
     pub fn mnem(&self) -> &'static str {
-        #[cfg(target_os = "windows")]
-        {
-            unsafe { CStr::from_ptr(operation_to_str(self.to_i32().unwrap()) as _) }
-                .to_str()
-                .unwrap()
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            unsafe { CStr::from_ptr(operation_to_str(self.to_u32().unwrap()) as _) }
-                .to_str()
-                .unwrap()
-        }
+        unsafe { CStr::from_ptr(operation_to_str((*self as u32).try_into().unwrap()) as _) }
+            .to_str()
+            .unwrap()
     }
 }
 

@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{convert::TryInto, fmt};
 
 use cstr_core::CStr;
 use num_traits::ToPrimitive;
@@ -353,18 +353,9 @@ impl Reg {
     /// assert_eq!(Reg::X0.name(), "x0");
     /// ```
     pub fn name(&self) -> &'static str {
-        #[cfg(target_os = "windows")]
-        {
-            unsafe { CStr::from_ptr(get_register_name(self.to_i32().unwrap()) as _) }
-                .to_str()
-                .unwrap()
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            unsafe { CStr::from_ptr(get_register_name(self.to_u32().unwrap()) as _) }
-                .to_str()
-                .unwrap()
-        }
+        unsafe { CStr::from_ptr(get_register_name((*self as u32).try_into().unwrap()) as _) }
+            .to_str()
+            .unwrap()
     }
 
     /// Returns the register size
@@ -393,14 +384,7 @@ impl Reg {
     /// };
     /// ```
     pub fn size(&self) -> usize {
-        #[cfg(target_os = "windows")]
-        {
-            unsafe { bad64_sys::get_register_size(self.to_i32().unwrap()) as usize }
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            unsafe { bad64_sys::get_register_size(self.to_u32().unwrap()) as usize }
-        }
+        unsafe { bad64_sys::get_register_size((*self as u32).try_into().unwrap()) as usize }
     }
 
     /// Returns register's SIMD status

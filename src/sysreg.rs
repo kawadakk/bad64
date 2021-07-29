@@ -1,7 +1,6 @@
-use core::fmt;
+use core::{convert::TryInto, fmt};
 
 use cstr_core::CStr;
-use num_traits::ToPrimitive;
 
 use bad64_sys::*;
 
@@ -689,22 +688,13 @@ impl SysReg {
     /// };
     /// ```
     pub fn name(&self) -> &'static str {
-        #[cfg(target_os = "windows")]
-        {
-            unsafe {
-                CStr::from_ptr(bad64_sys::get_system_register_name(self.to_i32().unwrap()) as _)
-            }
-            .to_str()
-            .unwrap()
+        unsafe {
+            CStr::from_ptr(
+                bad64_sys::get_system_register_name((*self as u32).try_into().unwrap()) as _,
+            )
         }
-        #[cfg(not(target_os = "windows"))]
-        {
-            unsafe {
-                CStr::from_ptr(bad64_sys::get_system_register_name(self.to_u32().unwrap()) as _)
-            }
-            .to_str()
-            .unwrap()
-        }
+        .to_str()
+        .unwrap()
     }
 }
 
